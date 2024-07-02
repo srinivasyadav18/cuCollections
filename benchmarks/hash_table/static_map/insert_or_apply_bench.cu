@@ -191,10 +191,10 @@ std::enable_if_t<(sizeof(Key) == sizeof(Value)), void> static_map_insert_or_appl
 
     timer.start();
 
-    cuco::static_map map{size, cuco::empty_key<Key>{-1}, cuco::empty_value<Value>{0}};
+    cuco::static_map map{size, cuco::empty_key<Key>{-1}, cuco::empty_value<Value>{0}, {}, {}, {}, {}, {}, {launch.get_stream()}};
     map.insert_or_apply(
       pairs.begin(), pairs.end(), cuco::op::reduce::sum, {launch.get_stream()});
-    map.retrieve_all(output_keys.begin(), output_values.begin());
+    map.retrieve_all(output_keys.begin(), output_values.begin(), {launch.get_stream()});
 
     timer.stop();
 
