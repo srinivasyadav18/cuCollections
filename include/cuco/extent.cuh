@@ -19,6 +19,8 @@
 #include <cstddef>
 #include <cstdint>
 
+#include <cuda/std/__mdspan/extents.h>
+
 namespace cuco {
 static constexpr std::size_t dynamic_extent = static_cast<std::size_t>(-1);
 
