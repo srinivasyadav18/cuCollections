@@ -19,6 +19,7 @@
 #include <cuco/detail/hash_functions/identity_hash.cuh>
 #include <cuco/detail/hash_functions/murmurhash3.cuh>
 #include <cuco/detail/hash_functions/xxhash.cuh>
+#include <cuda/std/span>
 
 #include <thrust/functional.h>
 
