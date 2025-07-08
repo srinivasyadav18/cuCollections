@@ -123,7 +123,10 @@ __global__ void string_hash_bench_kernel(
   while (idx < n) {
     auto const key = thrust::raw_reference_cast(*(in + idx));
     for (int32_t i = 0; i < n_repeats; ++i) {  // execute hash func n times
-      hash_result_aggregate(agg, hash.compute_hash(key.data(), key.size()));
+      hash_result_aggregate(
+        agg,
+        hash.compute_hash(
+          cuda::std::span{reinterpret_cast<const cuda::std::byte*>(key.data()), key.size_bytes()}));
     }
     idx += loop_stride;
   }
@@ -182,11 +185,11 @@ NVBENCH_BENCH_TYPES(
                                        cuco::xxhash_64<nvbench::int32_t>,
                                        cuco::xxhash_64<nvbench::int64_t>,
                                        cuco::xxhash_64<large_key<32>>,
-                                       cuco::murmurhash3_fmix_32<nvbench::int32_t>,
-                                       cuco::murmurhash3_fmix_64<nvbench::int64_t>,
-                                       cuco::murmurhash3_x86_128<nvbench::int32_t>,
-                                       cuco::murmurhash3_x86_128<nvbench::int64_t>,
-                                       cuco::murmurhash3_x86_128<large_key<32>>,
+                                       //  cuco::murmurhash3_fmix_32<nvbench::int32_t>,
+                                       //  cuco::murmurhash3_fmix_64<nvbench::int64_t>,
+                                       //  cuco::murmurhash3_x86_128<nvbench::int32_t>,
+                                       //  cuco::murmurhash3_x86_128<nvbench::int64_t>,
+                                       //  cuco::murmurhash3_x86_128<large_key<32>>,
                                        cuco::murmurhash3_x64_128<nvbench::int32_t>,
                                        cuco::murmurhash3_x64_128<nvbench::int64_t>,
                                        cuco::murmurhash3_x64_128<large_key<32>>>))
@@ -200,7 +203,7 @@ NVBENCH_BENCH_TYPES(
   NVBENCH_TYPE_AXES(nvbench::type_list<cuco::murmurhash3_32<cuda::std::byte>,
                                        cuco::xxhash_32<cuda::std::byte>,
                                        cuco::xxhash_64<cuda::std::byte>,
-                                       cuco::murmurhash3_x86_128<cuda::std::byte>,
+                                       //  cuco::murmurhash3_x86_128<cuda::std::byte>,
                                        cuco::murmurhash3_x64_128<cuda::std::byte>>))
   .set_name("string_hash_function_eval")
   .set_type_axes_names({"Hash"})

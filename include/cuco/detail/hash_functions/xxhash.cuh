@@ -20,6 +20,7 @@
 #include <cuco/extent.cuh>
 
 #include <cuda/std/cstddef>
+#include <cuda/std/span>
 
 #include <cstdint>
 
@@ -92,11 +93,11 @@ struct XXHash_32 {
   {
     if constexpr (sizeof(Key) <= 16) {
       Key const key_copy = key;
-      return compute_hash(reinterpret_cast<cuda::std::byte const*>(&key_copy),
-                          cuco::extent<std::size_t, sizeof(Key)>{});
+      return compute_hash(cuda::std::span<const cuda::std::byte>{
+        reinterpret_cast<const cuda::std::byte*>(&key_copy), sizeof(Key)});
     } else {
-      return compute_hash(reinterpret_cast<cuda::std::byte const*>(&key),
-                          cuco::extent<std::size_t, sizeof(Key)>{});
+      return compute_hash(cuda::std::span<const cuda::std::byte>{
+        reinterpret_cast<const cuda::std::byte*>(&key), sizeof(Key)});
     }
   }
 
@@ -109,10 +110,13 @@ struct XXHash_32 {
    * @param size The extent of the data in bytes
    * @return The resulting hash value
    */
-  template <typename Extent>
-  constexpr result_type __host__ __device__ compute_hash(cuda::std::byte const* bytes,
-                                                         Extent size) const noexcept
+  template <size_t Extent>
+  constexpr result_type __host__ __device__
+  compute_hash(cuda::std::span<const cuda::std::byte, Extent> sp) const noexcept
   {
+    auto bytes      = cuda::std::as_bytes(sp).data();
+    auto const size = sp.size_bytes();
+
     std::size_t offset = 0;
     std::uint32_t h32;
 
@@ -167,26 +171,6 @@ struct XXHash_32 {
     }
 
     return finalize(h32);
-  }
-
-  /**
-   * @brief Returns a hash value for its argument, as a value of type `result_type`.
-   *
-   * @note This API is to ensure backward compatibility with existing use cases using `std::byte`.
-   * Users are encouraged to use the appropriate `cuda::std::byte` overload whenever possible for
-   * better support and performance on the device.
-   *
-   * @tparam Extent The extent type
-   *
-   * @param bytes The input argument to hash
-   * @param size The extent of the data in bytes
-   * @return The resulting hash value
-   */
-  template <typename Extent>
-  constexpr result_type __host__ __device__ compute_hash(std::byte const* bytes,
-                                                         Extent size) const noexcept
-  {
-    return this->compute_hash(reinterpret_cast<cuda::std::byte const*>(bytes), size);
   }
 
  private:
@@ -275,11 +259,11 @@ struct XXHash_64 {
   {
     if constexpr (sizeof(Key) <= 16) {
       Key const key_copy = key;
-      return compute_hash(reinterpret_cast<cuda::std::byte const*>(&key_copy),
-                          cuco::extent<std::size_t, sizeof(Key)>{});
+      return compute_hash(cuda::std::span<const cuda::std::byte>(
+        reinterpret_cast<const cuda::std::byte*>(&key_copy), sizeof(Key)));
     } else {
-      return compute_hash(reinterpret_cast<cuda::std::byte const*>(&key),
-                          cuco::extent<std::size_t, sizeof(Key)>{});
+      return compute_hash(cuda::std::span<const cuda::std::byte>(
+        reinterpret_cast<const cuda::std::byte*>(&key), sizeof(Key)));
     }
   }
 
@@ -292,10 +276,12 @@ struct XXHash_64 {
    * @param size The extent of the data in bytes
    * @return The resulting hash value
    */
-  template <typename Extent>
-  constexpr result_type __host__ __device__ compute_hash(cuda::std::byte const* bytes,
-                                                         Extent size) const noexcept
+  template <size_t Extent>
+  constexpr result_type __host__ __device__
+  compute_hash(cuda::std::span<const cuda::std::byte, Extent> sp) const noexcept
   {
+    auto bytes         = cuda::std::as_bytes(sp).data();
+    auto const size    = sp.size_bytes();
     std::size_t offset = 0;
     std::uint64_t h64;
 
@@ -384,26 +370,6 @@ struct XXHash_64 {
       }
     }
     return finalize(h64);
-  }
-
-  /**
-   * @brief Returns a hash value for its argument, as a value of type `result_type`.
-   *
-   * @note This API is to ensure backward compatibility with existing use cases using `std::byte`.
-   * Users are encouraged to use the appropriate `cuda::std::byte` overload whenever possible for
-   * better support and performance on the device.
-   *
-   * @tparam Extent The extent type
-   *
-   * @param bytes The input argument to hash
-   * @param size The extent of the data in bytes
-   * @return The resulting hash value
-   */
-  template <typename Extent>
-  constexpr result_type __host__ __device__ compute_hash(std::byte const* bytes,
-                                                         Extent size) const noexcept
-  {
-    return this->compute_hash(reinterpret_cast<cuda::std::byte const*>(bytes), size);
   }
 
  private:

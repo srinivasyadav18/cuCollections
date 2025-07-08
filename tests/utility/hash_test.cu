@@ -239,8 +239,8 @@ TEMPLATE_TEST_CASE_SIG("utility hasher compute_hash tests",
 
   SECTION("Identical keys with static and dynamic key size should have the same hash value.")
   {
-    CHECK(hash(key) ==
-          hash.compute_hash(reinterpret_cast<cuda::std::byte const*>(&key), sizeof(key_type)));
+    CHECK(hash(key) == hash.compute_hash(cuda::std::span{
+                         reinterpret_cast<const cuda::std::byte*>(&key), sizeof(key_type)}));
   }
 }
 
