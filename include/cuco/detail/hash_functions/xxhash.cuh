@@ -93,11 +93,9 @@ struct XXHash_32 {
   {
     if constexpr (sizeof(Key) <= 16) {
       Key const key_copy = key;
-      return compute_hash(cuda::std::span<const cuda::std::byte>{
-        reinterpret_cast<const cuda::std::byte*>(&key_copy), sizeof(Key)});
+      return compute_hash(cuda::std::span<const Key, 1>{&key_copy, 1});
     } else {
-      return compute_hash(cuda::std::span<const cuda::std::byte>{
-        reinterpret_cast<const cuda::std::byte*>(&key), sizeof(Key)});
+      return compute_hash(cuda::std::span<const Key, 1>{&key, 1});
     }
   }
 
@@ -112,7 +110,7 @@ struct XXHash_32 {
    */
   template <size_t Extent>
   constexpr result_type __host__ __device__
-  compute_hash(cuda::std::span<const cuda::std::byte, Extent> sp) const noexcept
+  compute_hash(cuda::std::span<const Key, Extent> sp) const noexcept
   {
     auto bytes      = cuda::std::as_bytes(sp).data();
     auto const size = sp.size_bytes();
@@ -257,13 +255,11 @@ struct XXHash_64 {
    */
   constexpr result_type __host__ __device__ operator()(Key const& key) const noexcept
   {
-    if constexpr (sizeof(Key) <= 16) {
+   if constexpr (sizeof(Key) <= 16) {
       Key const key_copy = key;
-      return compute_hash(cuda::std::span<const cuda::std::byte>(
-        reinterpret_cast<const cuda::std::byte*>(&key_copy), sizeof(Key)));
+      return compute_hash(cuda::std::span<const Key, 1>{&key_copy, 1});
     } else {
-      return compute_hash(cuda::std::span<const cuda::std::byte>(
-        reinterpret_cast<const cuda::std::byte*>(&key), sizeof(Key)));
+      return compute_hash(cuda::std::span<const Key, 1>{&key, 1});
     }
   }
 
@@ -278,7 +274,7 @@ struct XXHash_64 {
    */
   template <size_t Extent>
   constexpr result_type __host__ __device__
-  compute_hash(cuda::std::span<const cuda::std::byte, Extent> sp) const noexcept
+  compute_hash(cuda::std::span<const Key, Extent> sp) const noexcept
   {
     auto bytes         = cuda::std::as_bytes(sp).data();
     auto const size    = sp.size_bytes();
